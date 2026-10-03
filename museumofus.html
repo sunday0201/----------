@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Museum of Us</title>
+<link href="https://fonts.googleapis.com/css2?family=Mali:wght@400;600&family=Itim&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0b0508;--pink:#ff5c8a;--wine:#7a1530;--paper:#f6eef0;--ink:#3b1a24;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html,body{height:100%;margin:0}
+body{position:relative;background:var(--bg);color:var(--paper);font-family:'Mali','Itim',cursive;overflow:hidden;perspective:1200px}
+button{font-family:inherit}
+.screen{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:20px;text-align:center}
+.screen.active{display:flex}
+.screen.enter{animation:enter 1.3s cubic-bezier(.2,.8,.2,1)}
+@keyframes enter{from{opacity:0;transform:translateZ(-380px) scale(.92);filter:blur(12px)}to{opacity:1;transform:none;filter:blur(0)}}
+.screen.leave{pointer-events:none;z-index:5;animation:leave 1s cubic-bezier(.5,0,.8,.4) forwards}
+@keyframes leave{to{opacity:0;transform:translateZ(520px) scale(1.25);filter:blur(10px)}}
+.btn{background:none;border:1.5px solid var(--pink);color:var(--paper);padding:10px 22px;border-radius:999px;font:inherit;cursor:pointer;transition:background .3s,color .3s}
+.btn:active{background:var(--pink);color:#000}
+.btn.main{background:var(--pink);color:#2a0a14;font-weight:600}
+/* TICKET */
+.ticket{display:flex;width:min(92vw,520px);transform:rotate(-3deg);cursor:pointer;filter:drop-shadow(0 0 18px rgba(255,92,138,.3));animation:float 5s ease-in-out infinite}
+@keyframes float{50%{transform:rotate(-3deg) translateY(-8px)}}
+.tk-main{position:relative;flex:1;background:#dfe1f3;color:#2b1f3d;border:2px solid #c9a6d6;padding:16px 46px;letter-spacing:.08em;font-size:10px}
+.col{position:absolute;top:12px;bottom:12px;width:22px;background:repeating-linear-gradient(90deg,#8b7fb0 0 1px,#dfe1f3 1px 4px);border-top:5px solid #8b7fb0;border-bottom:5px solid #8b7fb0}
+.col.l{left:10px}.col.r{right:10px}
+.tk-main h1{margin:12px 0 2px;font-size:clamp(26px,8vw,40px);letter-spacing:.12em;line-height:1;font-weight:600}
+.tk-main h2{margin:0 0 12px;font-size:clamp(18px,5vw,26px);font-weight:400;letter-spacing:.3em}
+.tk-foot{margin-top:14px;font-size:9px;line-height:1.7}
+.stub{width:78px;background:#7c1d3a;border:2px solid #c9a6d6;border-left:2px dashed #dfe1f3;display:flex;align-items:center;justify-content:space-around;padding:8px 4px}
+.bars{width:14px;height:72%;background:repeating-linear-gradient(0deg,#9fb4e8 0 3px,transparent 3px 5px)}
+.no{writing-mode:vertical-rl;font-size:12px;letter-spacing:.2em;color:#d9c2d8}
+/* PIN */
+.dots{font-size:26px;letter-spacing:10px;color:var(--pink)}
+.pad{display:grid;grid-template-columns:repeat(3,64px);gap:12px}
+.pad button{height:64px;border-radius:50%;border:1.5px solid var(--pink);background:none;color:var(--paper);font-size:22px;cursor:pointer}
+.pad button:active{background:var(--pink)}
+.shake{animation:shake .4s}
+@keyframes shake{25%{transform:translateX(-10px)}75%{transform:translateX(10px)}}
+/* GALLERY */
+.ph{display:flex;align-items:center;justify-content:center;font-size:48px;background:linear-gradient(135deg,var(--wine),#2a0d18)}
+.stage3d{position:relative;width:100%;height:58vh;perspective:900px}
+.card{position:absolute;left:50%;top:50%;width:min(40vw,200px);aspect-ratio:3/4;border:2px solid var(--pink);border-radius:12px;background:#1a0a10;overflow:hidden;transition:transform 1.4s cubic-bezier(.22,.7,.2,1),opacity 1.2s;box-shadow:0 0 22px var(--wine);cursor:pointer}
+.card .ph,.card img{width:100%;height:80%;object-fit:cover;display:flex}
+.card p{margin:6px 8px;font-size:12px}
+.ctrl{display:flex;align-items:center;gap:14px}
+.walk{width:76px;height:76px;border-radius:50%;border:2px solid var(--pink);background:none;color:var(--paper);font:inherit;font-size:14px;cursor:pointer;box-shadow:0 0 16px var(--wine)}
+.walk:active{background:var(--pink);color:#000}
+.view{position:fixed;inset:0;background:rgba(0,0,0,.78);display:none;align-items:center;justify-content:center;z-index:50}
+.view.show{display:flex}
+.vbox{background:#1a0a10;border:2px solid var(--pink);border-radius:16px;padding:16px;width:min(80vw,320px);box-shadow:0 0 30px var(--wine)}
+#vimg img,#vimg .ph{width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;display:flex}
+.vbox h3{margin:12px 0 6px}
+.vbox p{margin:0 0 14px;font-size:14px;line-height:1.7;opacity:.92}
+/* RECORD PLAYER */
+#cd{overflow-y:auto;justify-content:flex-start;gap:14px;padding:22px 16px 28px}
+#cd>:first-child{margin-top:auto}#cd>:last-child{margin-bottom:auto}
+.cd-head h2{margin:0;font-weight:600;font-size:26px;color:#ffd8e8;text-shadow:0 0 18px rgba(255,92,138,.45)}
+.cd-head p{margin:4px 0 0;font-size:14px;opacity:.75}
+.cd-layout{width:min(92vw,620px);display:grid;grid-template-columns:minmax(0,380px) minmax(190px,1fr);align-items:center;gap:14px;flex-shrink:0}
+.room{position:relative;width:100%;box-sizing:border-box;padding:16px 8px 14px;border-radius:22px;border:1.5px solid rgba(255,92,138,.55);background:radial-gradient(circle at 50% 35%,rgba(255,92,138,.16),transparent 62%),linear-gradient(180deg,#1d0a13,#10060b);box-shadow:0 0 28px rgba(122,21,48,.55),inset 0 0 22px rgba(0,0,0,.5)}
+.mstage{position:relative;width:100%;height:300px}
+.music{position:absolute;left:50%;top:0;margin-left:-170px;width:340px;height:300px;transform-origin:50% 0}
+.deck{position:absolute;left:92px;top:100px;width:190px;height:190px;border-radius:14px;border:2px solid var(--pink);background:linear-gradient(145deg,#3a1020,#1d0911);box-shadow:0 0 22px var(--wine)}
+.platter{position:absolute;left:20px;top:30px;width:150px;height:150px;box-sizing:border-box;border-radius:50%;background:#0d0508;border:3px solid #3a1a26;box-shadow:inset 0 0 12px #000}
+.pivot{position:absolute;right:12px;top:14px;width:22px;height:22px;box-sizing:border-box;border-radius:50%;background:#4a2030;border:2px solid var(--pink)}
+.arm{position:absolute;z-index:4;left:163px;top:21px;width:8px;height:112px;border-radius:4px;background:linear-gradient(#e8d5dc,#c9a6d6);transform-origin:50% 4px;transform:rotate(-6deg);transition:transform 1.4s cubic-bezier(.5,0,.3,1)}
+.arm::after{content:"";position:absolute;bottom:-6px;left:-3px;width:14px;height:12px;border-radius:3px;background:var(--pink)}
+.arm.on{transform:rotate(24deg);transition-delay:.9s}
+.disc{position:absolute;z-index:3;top:0;left:124px;width:130px;height:130px;border-radius:50%;cursor:pointer;transition:transform 1s cubic-bezier(.5,0,.3,1)}
+.disc i{display:block;width:100%;height:100%;border-radius:50%;animation:spin 6s linear infinite paused;background:radial-gradient(circle,var(--bg) 0 9%,#ddd 9% 13%,transparent 13%),conic-gradient(#ff5c8a,#ffb703,#9fb4e8,#c9a6d6,#ff5c8a);box-shadow:0 0 18px var(--pink)}
+.disc:not(.in){animation:bob 2.4s ease-in-out infinite}
+.disc.in{transform:translateY(142px);cursor:default}
+.disc.in i{animation-play-state:running}
+.disc.pop{animation:pop 1.1s .7s ease-out both}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes bob{50%{transform:translateY(-7px)}}
+@keyframes pop{0%{transform:translateY(142px)}55%{transform:translateY(-40px) rotate(25deg)}75%{transform:translateY(8px) rotate(-10deg)}100%{transform:none}}
+.mini{position:absolute;z-index:5;left:0;bottom:24px;width:84px;box-sizing:border-box;padding:6px;background:var(--paper);color:var(--ink);border-radius:4px;text-align:center;box-shadow:0 0 16px var(--wine);transform:rotate(-6deg)}
+.mini::before{content:"";position:absolute;top:-8px;left:50%;width:30px;height:12px;margin-left:-15px;background:rgba(255,92,138,.6);transform:rotate(3deg)}
+.mphoto{display:flex;align-items:center;justify-content:center;width:100%;aspect-ratio:1;background:#e6d3d8 center/cover;color:var(--wine);font-size:12px;line-height:1.3;cursor:pointer;overflow:hidden}
+.vase{display:block;height:auto}
+.music .vase{position:absolute;right:0;bottom:12px;width:52px}
+/* ชื่อเพลง (อยู่เหนือคำว่ากำลังเล่น) */
+.song-title{margin-top:8px;font-size:15px;font-weight:600;color:#ffd8e8;text-shadow:0 0 10px rgba(255,92,138,.5)}
+.led{display:inline-block;margin-top:6px;padding:5px 16px;border-radius:999px;background:#0b0508;border:1px solid rgba(255,92,138,.45);font-size:13px;color:#ff8fb0;text-shadow:0 0 8px var(--pink)}
+.note{position:relative;width:100%;box-sizing:border-box;padding:30px 20px 18px;border-radius:6px;transform:rotate(1.5deg);color:var(--ink);box-shadow:0 0 18px var(--wine);background:#fbf3f5 repeating-linear-gradient(transparent 0 33px,rgba(122,21,48,.16) 33px 34px) 0 26px}
+.note::before{content:"";position:absolute;top:-10px;left:50%;width:70px;height:20px;margin-left:-35px;background:rgba(255,92,138,.55);transform:rotate(-3deg)}
+.note::after{content:"♥";position:absolute;right:14px;top:8px;color:var(--pink);font-size:16px;opacity:.8}
+.note-title{margin:0 0 8px;font-weight:600;font-size:18px;color:var(--wine);line-height:1.4}
+.note-text{margin:0;font-size:15px;line-height:34px;text-align:left;white-space:pre-line}
+.note-sign{font-weight:600;font-size:17px;line-height:34px;text-align:right;color:var(--wine)}
+.cd-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.fx{position:absolute;inset:0;z-index:6;pointer-events:none;overflow:visible}
+.fxi{position:absolute;opacity:0;color:var(--pink);text-shadow:0 0 10px currentColor;animation:fxUp 2.2s ease-out forwards}
+@keyframes fxUp{0%{opacity:0;transform:scale(.4)}15%{opacity:1}100%{opacity:0;transform:translate(var(--dx),-140px) rotate(var(--rot)) scale(1.1)}}
+.ring{position:absolute;left:187px;top:205px;width:150px;height:150px;margin:-75px 0 0 -75px;border-radius:50%;border:2px solid var(--pink);opacity:0;animation:ringOut 1.3s ease-out forwards}
+@keyframes ringOut{0%{opacity:.9;transform:scale(.6)}100%{opacity:0;transform:scale(1.9)}}
+.deck.hit{animation:deckHit .8s ease-out}
+@keyframes deckHit{30%{transform:scale(1.04);box-shadow:0 0 44px var(--pink)}}
+/* DRAW */
+#cv{width:min(86vw,320px);height:auto;border-radius:6px;touch-action:none;background:#fff}
+.colors{display:flex;gap:10px}
+.colors i{width:26px;height:26px;border-radius:50%;border:2px solid #fff;cursor:pointer}
+/* DOORS + WISH */
+.arch,.final-scene{position:relative;border:3px solid var(--pink);border-radius:150px 150px 0 0;overflow:hidden}
+.arch{width:min(80vw,300px);height:60vh;cursor:pointer}
+.final-scene{width:min(84vw,330px);height:60vh;display:flex;align-items:center;justify-content:center;box-shadow:0 0 30px rgba(255,92,138,.18)}
+.msg{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:30px;text-shadow:0 0 14px var(--pink);z-index:1}
+.door{position:absolute;top:0;bottom:0;width:50%;background:var(--wine);transition:transform 1.8s cubic-bezier(.6,0,.2,1);z-index:2}
+.door.l{left:0;border-right:2px solid var(--pink)}.door.r{right:0;border-left:2px solid var(--pink)}
+.open .l{transform:translateX(-100%)}.open .r{transform:translateX(100%)}
+.closed .l,.closed .r{transform:none}
+.wish{position:relative;width:min(78vw,290px);box-sizing:border-box;background:var(--paper);color:var(--ink);border-radius:6px;padding:28px 22px 24px;text-align:center;box-shadow:0 0 30px var(--wine);transform:rotate(-1.5deg);z-index:1}
+.wish h4{margin:0 0 10px;font-size:24px;color:var(--wine);font-weight:600}
+.wish p{margin:0;font-size:15px;line-height:1.8}
+.wish .sign{margin-top:12px;font-size:18px;color:var(--wine)}
+.wish .vase{position:absolute;right:14px;top:-80px;width:46px}
+#wishpage.active .wish{animation:rise 1.6s .5s both cubic-bezier(.2,.8,.2,1)}
+@keyframes rise{from{opacity:0;transform:translateY(60px) rotate(-8deg) scale(.88)}to{opacity:1;transform:rotate(-1.5deg)}}
+.final-door{position:absolute;inset:0;overflow:hidden;z-index:5;pointer-events:none}
+.final-door .door{z-index:auto}
+.final-end{position:absolute;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--bg);opacity:0;pointer-events:none;transition:opacity 1.5s}
+.final-end.show{opacity:1}
+.final-end .heart{font-size:42px;color:var(--pink);text-shadow:0 0 20px var(--pink)}
+.final-end h3{margin:10px 0 0;font-size:25px;letter-spacing:.12em}
+.final-end p{margin:10px 0 0;font-size:14px;line-height:1.8;opacity:.8}
+#closeMuseum{position:relative;z-index:20;transition:opacity .5s}
+#closeMuseum.hide{opacity:0;pointer-events:none}
+/* BIRTHDAY */
+#birthday,#birthdayEnd{overflow-y:auto;justify-content:flex-start;padding:40px 20px 70px;background:radial-gradient(circle at 50% 20%,rgba(255,120,170,.12),transparent 35%),linear-gradient(180deg,#170b13,#260d1b 55%,#12070d)}
+.birthday-inner,.final-content{width:min(1050px,100%);margin:auto;text-align:center;position:relative;z-index:2}
+.final-content{width:min(850px,100%)}
+.bf{position:absolute;pointer-events:none;font-size:38px;opacity:.5;color:#d982a6;animation:bdFloat 4s ease-in-out infinite}
+@keyframes bdFloat{50%{translate:0 -12px}}
+.birthday-title{margin:0;color:#ffd8e8;font-size:clamp(30px,6vw,58px);letter-spacing:3px;font-weight:600;text-shadow:0 0 25px rgba(255,130,180,.3)}
+.birthday-subtitle{margin:10px 0 30px;color:#eab5c9;font-size:15px}
+.birthday-cake-area{display:flex;flex-direction:column;align-items:center;margin-bottom:60px}
+.cake{width:190px;height:150px;position:relative;margin-top:15px}
+.cake div{position:absolute;left:50%;transform:translateX(-50%)}
+.cake-plate{bottom:0;width:210px;height:20px;border-radius:50%;background:#d98aa9;box-shadow:0 7px 20px rgba(0,0,0,.35)}
+.cake-body{bottom:15px;width:165px;height:82px;border-radius:12px 12px 20px 20px;background:linear-gradient(#c96791,#9f456e)}
+.cake-cream{bottom:76px;width:175px;height:28px;border-radius:18px 18px 12px 12px;background:#ffd5e5}
+.candle{bottom:103px;width:13px;height:43px;border-radius:6px 6px 3px 3px;z-index:4;background:repeating-linear-gradient(135deg,#ffd4e4 0 7px,#d96d9a 7px 13px)}
+.flame{top:-24px;width:16px;height:24px;border-radius:50%;background:#ffd36b;box-shadow:0 0 18px rgba(255,180,80,.8);animation:flame 1s ease-in-out infinite alternate}
+@keyframes flame{from{transform:translateX(-50%) scale(.9) rotate(-3deg)}to{transform:translateX(-50%) scale(1.08) rotate(3deg)}}
+.cake.blown .flame{opacity:0;animation:none}
+.blow-candle{margin-top:18px;border:0;background:none;color:#dba7ba;font:inherit;font-size:13px;cursor:pointer}
+.birthday-message{max-width:650px;margin:0 auto 45px;padding:0 15px}
+.birthday-message h2{margin:0 0 15px;color:#ffe3ee;font-size:clamp(23px,4vw,34px)}
+.birthday-message p{margin:0;color:#e7bdce;line-height:1.9;font-size:15px}
+.birthday-photo-title{color:#f8cede;font-size:20px;margin-bottom:22px}
+.birthday-stack{width:min(360px,82vw);height:450px;margin:0 auto;position:relative;touch-action:pan-y;user-select:none;cursor:grab}
+.birthday-card{position:absolute;top:50%;left:50%;width:310px;max-width:80vw;height:390px;padding:12px;background:#fff8fb;border-radius:8px;overflow:hidden;box-shadow:0 20px 45px rgba(0,0,0,.45);transition:transform .55s cubic-bezier(.22,.8,.25,1),opacity .35s,filter .35s}
+.birthday-card img,.photo-placeholder{width:100%;height:320px;display:flex;object-fit:cover;border-radius:5px}
+.photo-placeholder{align-items:center;justify-content:center;flex-direction:column;gap:10px;font-size:42px;color:#ffeaf3;background:linear-gradient(135deg,#8d3e62,#d67da1)}
+.photo-placeholder span{font-size:13px}
+.birthday-card p{margin:12px 5px 0;color:#6f304c;font-size:14px;font-weight:600}
+.birthday-controls{margin-top:30px;display:flex;justify-content:center;align-items:center;gap:12px;flex-wrap:wrap}
+.birthday-next{border:1px solid rgba(255,190,215,.35);background:rgba(255,145,185,.13);color:#ffe2ed;padding:12px 25px;border-radius:999px;font:inherit;font-size:14px;cursor:pointer}
+.birthday-counter{color:#cfa2b4;font-size:13px}
+.final-small{margin:0 0 20px;color:#c995aa;font-size:13px;letter-spacing:3px}
+.final-heart{font-size:45px;margin-bottom:25px;animation:bdBeat 1.8s ease-in-out infinite}
+@keyframes bdBeat{50%{transform:scale(1.12)}}
+.final-title{margin:0;color:#ffe1ec;font-size:clamp(29px,6vw,55px);line-height:1.5;font-weight:600}
+.final-title .hl{display:block;margin-top:8px;color:#f5abc8;font-size:clamp(23px,4.5vw,40px)}
+.final-line{width:70px;height:1px;margin:30px auto;background:linear-gradient(90deg,transparent,#e99bb9,transparent)}
+.final-message{max-width:590px;margin:0 auto;color:#dcb2c3;font-size:15px;line-height:2;padding:0 12px}
+.final-sign{margin:35px 0 20px;color:#f2c6d7;font-size:14px}
+@media(max-width:700px){.cd-layout{grid-template-columns:1fr;width:min(92vw,380px)}.note{transform:rotate(-1deg)}}
+@media(max-width:600px){.birthday-stack{width:88vw;height:410px}.birthday-card{width:285px;height:355px}.birthday-card img,.photo-placeholder{height:285px}}
+@media(prefers-reduced-motion:reduce){.screen.enter,.screen.leave,.ticket{animation-duration:.01s}.door{transition-duration:.01s}}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<g id="fl"><g fill="currentColor"><ellipse cy="-7" rx="4.5" ry="7"/><ellipse cy="-7" rx="4.5" ry="7" transform="rotate(72)"/><ellipse cy="-7" rx="4.5" ry="7" transform="rotate(144)"/><ellipse cy="-7" rx="4.5" ry="7" transform="rotate(216)"/><ellipse cy="-7" rx="4.5" ry="7" transform="rotate(288)"/></g><circle r="3.5" fill="#fff4c2"/></g>
+<symbol id="vase" viewBox="0 0 64 120"><path d="M32 82V30M32 82C28 64 20 54 14 42M32 82C38 64 46 52 50 38" stroke="#2a9d8f" stroke-width="2" fill="none"/><use href="#fl" x="32" y="24" color="#ff5c8a"/><use href="#fl" x="14" y="38" color="#ffb703"/><use href="#fl" x="50" y="34" color="#c9a6d6"/><path d="M20 78h24l-3 6c6 8 5 24-2 30H25c-7-6-8-22-2-30z" fill="#7a1530" stroke="#ff5c8a" stroke-width="1.5"/></symbol>
+</defs></svg>
+
+<!-- TICKET -->
+<section id="ticket" class="screen active">
+  <div class="ticket" onclick="go('pin')">
+    <div class="tk-main">
+      <div class="col l"></div><div class="col r"></div>
+      <div>EXHIBITION OF OUR LOVE — ADMIT TWO</div>
+      <h1>MUSEUM</h1><h2>OF US</h2>
+      <div>PASS FOR MY FAVORITE PERSON</div>
+      <div class="tk-foot">SEAT: IN MY HEART &nbsp;·&nbsp; DATE: FOREVER &nbsp;·&nbsp; VENUE: OUR WORLD</div>
+    </div>
+    <div class="stub"><div class="bars"></div><div class="no">№ 080326</div></div>
+  </div>
+  <button class="btn" onclick="go('pin')">แตะตั๋วเพื่อเข้าชม</button>
+</section>
+
+<!-- PIN -->
+<section id="pin" class="screen">
+  <p>ใส่รหัส 4 หลักเพื่อเข้าชม</p>
+  <div id="pinbox"><div class="dots" id="dots"></div></div>
+  <div class="pad" id="pad"></div>
+</section>
+
+<!-- DOORS -->
+<section id="doors" class="screen">
+  <div class="arch" id="arch">
+    <div class="msg">I LOVE YOU<small style="font-size:13px;margin-top:8px">ขอบคุณที่อยู่ข้างกันนะ</small></div>
+    <div class="door l"></div><div class="door r"></div>
+  </div>
+  <p style="font-size:14px;opacity:.7">แตะประตูเพื่อเปิด</p>
+</section>
+
+<!-- GALLERY -->
+<section id="gallery" class="screen">
+  <p style="margin:0;letter-spacing:.15em">WELCOME TO OUR MUSEUM</p>
+  <div class="stage3d" id="stage"></div>
+  <div class="ctrl">
+    <button class="btn" id="back">◀</button>
+    <button class="walk" id="walk">WALK</button>
+    <button class="btn" id="mute">🔊</button>
+  </div>
+  <div class="view" id="view"><div class="vbox">
+    <div id="vimg"></div><h3 id="vcap"></h3><p id="vtxt"></p>
+    <button class="btn" id="vclose">ปิด</button>
+  </div></div>
+</section>
+
+<!-- RECORD PLAYER -->
+<section id="cd" class="screen">
+  <div class="cd-head">
+    <h2>เพลงรักทุกเพลงเป็นของเธอ ♪</h2>
+    <p>แตะแผ่นเสียงเพื่อวางลงเครื่องเล่น</p>
+  </div>
+
+  <div class="cd-layout">
+    <div class="room">
+      <div class="mstage" id="mstage"><div class="music" id="music">
+        <div class="mini"><label class="mphoto" id="mphoto"><span>+<br>ใส่รูป</span><input type="file" accept="image/*" id="photoin" hidden></label></div>
+        <div class="disc" id="disc"><i></i></div>
+        <div class="deck" id="deck"><div class="platter"></div><div class="pivot"></div><div class="arm" id="arm"></div></div>
+        <svg class="vase" viewBox="0 0 64 120"><use href="#vase" width="64" height="120"/></svg>
+        <div class="fx" id="fx"></div>
+      </div></div>
+      <!-- ชื่อเพลงอยู่ด้านล่าง ก่อนข้อความ "กำลังเล่น" -->
+      <div class="song-title" id="songTitle"></div>
+      <div class="led" id="led">แตะแผ่นเสียงเพื่อวาง</div>
+    </div>
+
+    <div class="note">
+      <p class="note-title">เพลงรักทุกเพลงเป็นของเธอ ♫</p>
+      <p class="note-text" id="noteTxt"></p>
+      <div class="note-sign" id="noteSign"></div>
+    </div>
+  </div>
+
+  <div class="cd-btns">
+    <button class="btn" id="eject">⏏ เอาออก</button>
+    <button class="btn main" onclick="stopFx();go('draw')">ไปต่อ ♥</button>
+  </div>
+</section>
+
+<!-- DRAW -->
+<section id="draw" class="screen">
+  <p>วาดอะไรให้เราหน่อย ♥</p>
+  <canvas id="cv" width="320" height="220"></canvas>
+  <div class="colors" id="colors"></div>
+  <div>
+    <button class="btn" id="clear">ล้าง</button>
+    <button class="btn" onclick="go('wishpage')">เสร็จแล้ว</button>
+  </div>
+</section>
+
+<!-- WISH -->
+<section id="wishpage" class="screen">
+  <div class="final-scene">
+    <div class="wish">
+      <svg class="vase" viewBox="0 0 64 120"><use href="#vase" width="64" height="120"/></svg>
+      <h4>Happy Anniversary ♥</h4>
+      <p id="wishtxt"></p>
+      <div class="sign" id="wishsign"></div>
+    </div>
+    <div class="final-door open" id="finalDoor"><div class="door l"></div><div class="door r"></div></div>
+    <div class="final-end" id="finalEnd">
+      <div class="heart">♥</div><h3>WAIT...</h3>
+      <p>พิพิธภัณฑ์ปิดแล้ว<br>แต่เรามีอะไรอีกอย่างให้เธอ ♥</p>
+    </div>
+  </div>
+  <button class="btn" id="closeMuseum">ปิดพิพิธภัณฑ์ ♥</button>
+</section>
+
+<!-- BIRTHDAY -->
+<section id="birthday" class="screen">
+  <div class="bf" style="top:8%;left:6%">✿</div><div class="bf" style="top:18%;right:7%;animation-delay:1s">❀</div>
+  <div class="bf" style="bottom:13%;left:8%;animation-delay:2s">✽</div><div class="bf" style="bottom:8%;right:9%;animation-delay:.5s">❁</div>
+  <div class="birthday-inner">
+    <h1 class="birthday-title">HAPPY BIRTHDAY ♥</h1>
+    <p class="birthday-subtitle">a little room made especially for you</p>
+    <div class="birthday-cake-area">
+      <div class="cake" id="birthdayCake">
+        <div class="candle"><div class="flame"></div></div>
+        <div class="cake-cream"></div><div class="cake-body"></div><div class="cake-plate"></div>
+      </div>
+      <button class="blow-candle" id="blowCandle" type="button">✨ เป่าเทียน</button>
+    </div>
+    <div class="birthday-message">
+      <h2>สุขสันต์วันเกิดนะ ♥</h2>
+      <p>ขอให้ปีนี้เต็มไปด้วยเรื่องราวดี ๆ รอยยิ้ม และวันที่ทำให้มีความสุข ขอบคุณที่เข้ามาเป็นส่วนหนึ่งของความทรงจำดี ๆ และหวังว่าในทุก ๆ วันต่อจากนี้ จะมีเรื่องน่ารัก ๆ ให้เราได้เก็บเอาไว้ด้วยกันอีกเยอะ ๆ นะ</p>
+    </div>
+    <div class="birthday-photo-title">📷 little memories</div>
+    <div class="birthday-stack" id="birthdayStack"></div>
+    <div class="birthday-controls">
+      <button class="birthday-next" id="birthdayNext" type="button">รูปต่อไป →</button>
+      <span class="birthday-counter" id="birthdayCounter">1 / 5</span>
+    </div>
+    <p style="margin-top:16px;color:#b9879c;font-size:12px">ลากรูปไปทางซ้ายหรือขวาเพื่อเลื่อนรูปได้เลย ♥</p>
+    <button class="birthday-next" style="margin-top:20px" onclick="go('birthdayEnd')">หน้าสุดท้าย ♥</button>
+  </div>
+</section>
+
+<!-- BIRTHDAY END -->
+<section id="birthdayEnd" class="screen">
+  <div class="bf" style="left:7%;top:18%">✿</div><div class="bf" style="right:8%;top:23%;animation-delay:1.5s">❀</div>
+  <div class="bf" style="left:12%;bottom:15%;animation-delay:2s">✽</div><div class="bf" style="right:12%;bottom:12%;animation-delay:3s">❁</div>
+  <div class="final-content">
+    <p class="final-small">ONE LAST THING</p>
+    <div class="final-heart">♥</div>
+    <h1 class="final-title">ขอบคุณที่เกิดมา<span class="hl">และเติบโตมาอย่างดี</span><span class="hl">เพื่อมารักกัน</span></h1>
+    <div class="final-line"></div>
+    <p class="final-message">ขอบคุณสำหรับทุกช่วงเวลาที่ผ่านมา ขอบคุณที่เติบโตมาเป็นเธอในวันนี้ และขอบคุณที่เส้นทางของเรา พาให้ได้มาเจอกัน<br><br>จากความทรงจำเล็ก ๆ ในวันนั้น จนกลายเป็นเรื่องราวมากมายในวันนี้<br><br>ขอให้วันเกิดปีนี้ เป็นอีกหนึ่งวันที่เธอจะยิ้มเมื่อนึกย้อนกลับมา</p>
+    <div class="final-sign">happy birthday, my favorite person ♥</div>
+    <button class="btn" onclick="go('wishpage')">กลับไปดูการ์ดของเราอีกครั้ง ♥</button>
+  </div>
+</section>
+
+<script>
+/* ===================== SETTINGS ===================== */
+const PIN = "0709";
+
+/* ★ เพลง: วางไฟล์ song.mp3 ไว้โฟลเดอร์เดียวกับ HTML หรือใส่ลิงค์ .mp3 ตรง ๆ แทนก็ได้ */
+const MUSIC_SRC   = "song.mp3";
+/* ★ ชื่อเพลง: แสดงที่ใต้เครื่องเล่น ก่อนคำว่า "กำลังเล่น" */
+const MUSIC_TITLE = "ชื่อเพลง – ศิลปิน";
+/* ★ รูปข้างเครื่องเล่น เช่น "us.jpg" */
+const MUSIC_PHOTO = "";
+const MUSIC_NOTE = "เพลงรักทุกเพลงเป็นของเธอ\nและเพลงนี้ก็เป็นเพลงของเรา ♥";
+const MUSIC_NOTE_SIGN = "— รักเธอ";
+
+/* ★ รูปหน้าแกลเลอรี่ 6 รูป: ใส่ใน src เช่น "photos/1.jpg" */
+const MEMORIES = [
+ {src:"", cap:"No.1 – First Date", txt:"วันแรกที่เราเจอกันคือวันรับน้องนินา ครั้งแรกที่ได้ไปนั่งทำความรู้จักกันเธอบอกว่าชอบเราตั้งแต่แรกเห็นเลย น่ารักเนอะ"},
+ {src:"", cap:"No.2 – Our Trip", txt:"ทริปที่เราไปด้วยกัน ขอบคุณที่ไปด้วยกันนะถึงแม้จะมีเพื่อนไปด้วยแต่สุดท้ายก้ได้จับมือใช้เวลาอยู่ด้วยกันจนหมดวันเลยนะ หวังว่าเราจะได้ไปเที่ยวด้วยกันแค่สองคนในสักวันหนึ่ง"},
+ {src:"", cap:"No.3 – Celebration", txt:"วันที่เราฉลองปีใหม่ด้วยกันครั้งแรก ดีใจมากที่วันนั้นเธอพยายามจะอยู่กับเราเราอยากบอกว่าขอโทษที่น้อยใจวันนั้นเธอทำเต็มที่ที่สุดแล้วมันทำให้เรารู้ว่าเราสำคัญกับเธอมากๆ"},
+ {src:"", cap:"No.4 – Together", txt:"ทุกวันที่อยู่ด้วยกันคือวันที่ดีที่สุด ถึงจะทะเลาะกันบ้างแต่สุดท้ายแล้วเราก้ผ่านมันมาได้ จับมือผ่านเรื่องราวต่างๆมาด้วยกันตั้งเยอะเลยเนอะ"},
+ {src:"", cap:"No.5 – Our Moment", txt:"ช่วงเวลาเล็กๆ ที่เรามีให้กันมันมีความหมายมากๆเลย ขอบคุณที่เป็นความสุขให้เค้าตลอด 3ปีที่ผ่านมานะ"},
+ {src:"", cap:"No.6 – Happy Anniversary", txt:"เค้าเคยคิดว่าตัวเองเป็นคนไม่มีโชค จนกระทั่งได้เจอเธอ ถึงได้รู้ว่าโชคดีทั้งหมดของเค้ามันถูกเก็บไว้ใช้เพื่อเวลานี้"}
+];
+
+const WISH = "ขอให้เรารักกันแบบนี้ไปนานๆ นะ ขอให้เธอมีความสุขทุกวัน สุขภาพแข็งแรง ฝันอะไรขอให้ได้ทุกอย่าง และขอให้มีเราอยู่ข้างๆ เธอเสมอ";
+const WISH_SIGN = "รักเธอที่สุด ♥";
+
+/* ★ รูปหน้าวันเกิด 5 รูป: ใส่ใน src เช่น "photos/b1.jpg" */
+const BIRTHDAY_PHOTOS = [
+ {src:"", caption:"ความทรงจำของเรา ♥"},
+ {src:"", caption:"อีกหนึ่งวันที่อยากเก็บไว้"},
+ {src:"", caption:"วันที่มีรอยยิ้มเต็มไปหมด"},
+ {src:"", caption:"รูปนี้ก็ยังชอบอยู่เหมือนเดิม"},
+ {src:"", caption:"และจะมีรูปใหม่เพิ่มขึ้นอีกเรื่อย ๆ ♥"}
+];
+
+/* ===================== HELPERS ===================== */
+const $ = id => document.getElementById(id);
+const rand = (a,b) => a + Math.random()*(b-a);
+const imgOr = (src, ph) => src ? `<img src="${src}" alt="">` : ph;
+$('noteTxt').textContent = MUSIC_NOTE;
+$('noteSign').textContent = MUSIC_NOTE_SIGN;
+$('songTitle').textContent = "🎵 " + MUSIC_TITLE;
+$('wishtxt').textContent = WISH;
+$('wishsign').textContent = WISH_SIGN;
+
+function go(id){
+  startMusic();
+  const cur = document.querySelector('.screen.active'), nxt = $(id);
+  if(!nxt || cur === nxt) return;
+  if(cur){ cur.classList.add('leave'); setTimeout(() => cur.classList.remove('active','leave'), 1000); }
+  nxt.classList.add('active','enter');
+  setTimeout(() => nxt.classList.remove('enter'), 1300);
+  if(id === 'cd') setTimeout(fit, 60);
+  if(id === 'wishpage') setTimeout(resetFinalDoor, 50);
+  if(id === 'birthday') setTimeout(() => { bIdx = 0; updateStack(); setCandle(true); nxt.scrollTop = 0; }, 50);
+  if(id === 'birthdayEnd') setTimeout(() => nxt.scrollTop = 0, 50);
+}
+
+/* ===================== MUSIC ===================== */
+const audio = new Audio(MUSIC_SRC);
+audio.loop = true;
+audio.preload = "auto";
+function startMusic(){ audio.play().catch(() => {}); }
+document.addEventListener('pointerdown', startMusic, {passive:true});
+$('mute').onclick = () => { audio.muted = !audio.muted; $('mute').textContent = audio.muted ? '🔇' : '🔊'; };
+
+/* ===================== PIN ===================== */
+let typed = "";
+const showDots = () => $('dots').textContent = "●".repeat(typed.length) + "○".repeat(4 - typed.length);
+function press(k){
+  startMusic();
+  if(k === "⌫") typed = typed.slice(0,-1); else if(typed.length < 4) typed += k;
+  showDots();
+  if(typed.length < 4) return;
+  if(typed === PIN){ typed = ""; showDots(); go('doors'); }
+  else{
+    $('pinbox').classList.add('shake');
+    setTimeout(() => { typed = ""; $('pinbox').classList.remove('shake'); showDots(); }, 400);
+  }
+}
+["1","2","3","4","5","6","7","8","9","","0","⌫"].forEach(k => {
+  if(!k) return $('pad').appendChild(document.createElement('span'));
+  const b = document.createElement('button');
+  b.textContent = k; b.onclick = () => press(k);
+  $('pad').appendChild(b);
+});
+showDots();
+
+/* ===================== DOORS ===================== */
+let entered = false;
+$('arch').onclick = () => {
+  if(entered) return;
+  entered = true;
+  $('arch').classList.add('open');
+  setTimeout(() => { layout(); go('gallery'); }, 2100);
+};
+
+/* ===================== GALLERY ===================== */
+let p = 0;
+const cards = MEMORIES.map(m => {
+  const c = document.createElement('div');
+  c.className = 'card';
+  c.innerHTML = imgOr(m.src, '<div class="ph">♥</div>') + `<p>${m.cap}</p>`;
+  c.onclick = () => openView(m);
+  $('stage').appendChild(c);
+  return c;
+});
+const lastStep = Math.ceil(cards.length/2) - 1;
+function layout(){
+  cards.forEach((c,i) => {
+    const side = i % 2 ? 1 : -1, d = Math.floor(i/2) - p;
+    c.style.transform = `translate(-50%,-50%) translateX(${side*65}%) translateZ(${-d*320}px) rotateY(${-side*28}deg)`;
+    c.style.opacity = (d < 0 || d > 3) ? 0 : 1 - d*.22;
+    c.style.pointerEvents = d === 0 ? 'auto' : 'none';
+    c.style.zIndex = 10 - d;
+  });
+  $('walk').textContent = p >= lastStep ? 'NEXT' : 'WALK';
+}
+$('walk').onclick = () => { if(p >= lastStep) go('cd'); else { p++; layout(); } };
+$('back').onclick = () => { if(p > 0){ p--; layout(); } };
+function openView(m){
+  $('vimg').innerHTML = imgOr(m.src, '<div class="ph">♥</div>');
+  $('vcap').textContent = m.cap;
+  $('vtxt').textContent = m.txt;
+  $('view').classList.add('show');
+}
+$('vclose').onclick = () => $('view').classList.remove('show');
+layout();
+
+/* ===================== RECORD PLAYER ===================== */
+let inserted = false, fxTimer = null;
+function spawn(ch, x, y, spread, delay = 0){
+  const s = document.createElement('span');
+  s.className = 'fxi'; s.textContent = ch;
+  s.style.cssText = `left:${x + rand(-spread,spread)}px;top:${y}px;font-size:${rand(16,28)}px;animation-delay:${delay}ms;--dx:${rand(-60,60)}px;--rot:${rand(-45,45)}deg`;
+  $('fx').appendChild(s);
+  setTimeout(() => s.remove(), 2400 + delay);
+}
+const burst = (list, n, x, y, spread) => { for(let i = 0; i < n; i++) spawn(list[i % list.length], x, y, spread, i*70); };
+function ring(){
+  const r = document.createElement('div');
+  r.className = 'ring'; $('fx').appendChild(r);
+  setTimeout(() => r.remove(), 1400);
+  $('deck').classList.remove('hit'); void $('deck').offsetWidth; $('deck').classList.add('hit');
+}
+function stopFx(){ clearInterval(fxTimer); fxTimer = null; }
+
+$('disc').onclick = () => {
+  if(inserted) return;
+  inserted = true;
+  startMusic();
+  $('disc').classList.remove('pop'); $('disc').classList.add('in'); $('arm').classList.add('on');
+  $('led').textContent = "♪ กำลังเล่น...";
+  setTimeout(() => { ring(); burst(['💗','✨','🎵','♥','🌸','🎶'], 12, 187, 200, 60); }, 950);
+  clearInterval(fxTimer);
+  fxTimer = setInterval(() => spawn(['♪','♥','🎵','✨'][Math.floor(Math.random()*4)], 187, 190, 55), 800);
+};
+
+$('eject').onclick = () => {
+  if(!inserted) return;
+  inserted = false; stopFx();
+  $('arm').classList.remove('on'); $('disc').classList.remove('in'); $('disc').classList.add('pop');
+  $('led').textContent = "แผ่นเด้งออกมาแล้ว!";
+  setTimeout(() => burst(['✨','💫','♥'], 6, 189, 60, 40), 800);
+};
+
+function setPhoto(u){ $('mphoto').style.backgroundImage = `url("${u}")`; $('mphoto').querySelector('span').hidden = true; }
+if(MUSIC_PHOTO) setPhoto(MUSIC_PHOTO);
+$('photoin').onchange = e => { const f = e.target.files[0]; if(f) setPhoto(URL.createObjectURL(f)); };
+
+function fit(){
+  const w = $('mstage').clientWidth || innerWidth - 40, s = Math.min(1, (w - 8)/340);
+  $('music').style.transform = `scale(${s})`;
+  $('mstage').style.height = (300*s) + 'px';
+}
+addEventListener('resize', fit);
+fit();
+
+/* ===================== DRAW ===================== */
+const cv = $('cv'), ctx = cv.getContext('2d');
+let color = "#ff5c8a", drawing = false;
+const wipe = () => { ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, cv.width, cv.height); };
+wipe(); ctx.lineWidth = 4; ctx.lineCap = "round";
+const pos = e => { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left)*cv.width/r.width, (e.clientY - r.top)*cv.height/r.height]; };
+cv.addEventListener('pointerdown', e => { drawing = true; ctx.strokeStyle = color; ctx.beginPath(); ctx.moveTo(...pos(e)); });
+cv.addEventListener('pointermove', e => { if(drawing){ ctx.lineTo(...pos(e)); ctx.stroke(); } });
+addEventListener('pointerup', () => drawing = false);
+["#ff5c8a","#7a1530","#ffb703","#2a9d8f","#3a86ff","#000000"].forEach(c => {
+  const i = document.createElement('i');
+  i.style.background = c; i.onclick = () => color = c;
+  $('colors').appendChild(i);
+});
+$('clear').onclick = wipe;
+
+/* ===================== WISH PAGE ===================== */
+let museumClosed = false;
+function resetFinalDoor(){
+  museumClosed = false;
+  $('finalDoor').classList.replace('closed','open') || $('finalDoor').classList.add('open');
+  $('finalEnd').classList.remove('show');
+  $('closeMuseum').classList.remove('hide');
+}
+$('closeMuseum').onclick = () => {
+  if(museumClosed) return;
+  museumClosed = true;
+  $('closeMuseum').classList.add('hide');
+  $('finalDoor').classList.remove('open'); $('finalDoor').classList.add('closed');
+  setTimeout(() => {
+    $('finalEnd').classList.add('show');
+    setTimeout(() => go('birthday'), 2200);
+  }, 1900);
+};
+
+/* ===================== BIRTHDAY ===================== */
+let bIdx = 0, bStartX = 0, bDrag = false;
+const POSES = [
+ ["translate(-50%,-50%) rotate(-2deg) scale(1)", 1, 10, 1],
+ ["translate(calc(-50% + 13px),calc(-50% + 10px)) rotate(3deg) scale(.96)", .9, 9, .92],
+ ["translate(calc(-50% + 25px),calc(-50% + 20px)) rotate(-5deg) scale(.92)", .75, 8, .84],
+ ["translate(calc(-50% + 35px),calc(-50% + 28px)) rotate(6deg) scale(.88)", .55, 7, .75]
+];
+const bCards = BIRTHDAY_PHOTOS.map(ph => {
+  const c = document.createElement('div');
+  c.className = 'birthday-card';
+  c.innerHTML = imgOr(ph.src, '<div class="photo-placeholder"><div>♡</div><span>ใส่รูปของเราได้ที่นี่</span></div>') + `<p>${ph.caption}</p>`;
+  $('birthdayStack').appendChild(c);
+  return c;
+});
+function updateStack(){
+  const n = bCards.length;
+  bCards.forEach((c,i) => {
+    const d = (i - bIdx + n) % n, s = POSES[d];
+    c.style.transform = s ? s[0] : "translate(-50%,-50%) scale(.8)";
+    c.style.opacity = s ? s[1] : 0;
+    c.style.zIndex = s ? s[2] : 1;
+    c.style.filter = s ? `brightness(${s[3]})` : "none";
+    c.style.pointerEvents = d === 0 ? "auto" : "none";
+  });
+  $('birthdayCounter').textContent = `${bIdx + 1} / ${n}`;
+}
+const bStep = k => { bIdx = (bIdx + k + bCards.length) % bCards.length; updateStack(); };
+$('birthdayNext').onclick = () => bStep(1);
+const bs = $('birthdayStack');
+bs.addEventListener('pointerdown', e => { bDrag = true; bStartX = e.clientX; bs.setPointerCapture(e.pointerId); });
+bs.addEventListener('pointerup', e => {
+  if(!bDrag) return; bDrag = false;
+  const d = e.clientX - bStartX;
+  if(d < -50) bStep(1); else if(d > 50) bStep(-1);
+});
+bs.addEventListener('pointercancel', () => bDrag = false);
+
+let candleOn = true;
+function setCandle(on){
+  candleOn = on;
+  $('birthdayCake').classList.toggle('blown', !on);
+  $('blowCandle').textContent = on ? "✨ เป่าเทียน" : "✨ จุดเทียนอีกครั้ง ♥";
+}
+$('blowCandle').onclick = () => setCandle(!candleOn);
+updateStack();
+</script>
+</body>
+</html>
